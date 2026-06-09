@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Kuis Fiqih: Thaharah & Shalat</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        .correct { background-color: #d1fae5; border-color: #10b981; text-color: #065f46; }
+        .wrong { background-color: #fee2e2; border-color: #ef4444; text-color: #991b1b; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans min-h-screen flex flex-col justify-between">
+
+    <header class="bg-teal-600 text-white py-6 shadow-md text-center">
+        <h1 class="text-2xl md:text-3xl font-bold">Kuis Interaktif Fiqih Islam</h1>
+        <p class="text-sm md:text-base mt-1 text-teal-100">Materi: Thaharah, Wudhu, Tayamum, Mandi Wajib, & Shalat</p>
+    </header>
+
+    <main class="container mx-auto max-w-4xl p-4 my-6 flex-grow">
+        <div id="start-screen" class="bg-white p-8 rounded-xl shadow-md text-center">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Selamat Datang di Ujian Evaluasi Fiqih</h2>
+            <p class="text-gray-600 mb-6">Kuis ini terdiri dari 40 soal pilihan ganda yang mencakup materi lengkap Thaharah dan Shalat. Uji pemahaman Anda sekarang!</p>
+            <button onclick="startQuiz()" class="bg-teal-600 hover:bg-teal-700 text-white font-semibold px-6 py-3 rounded-lg shadow transition duration-200 cursor-pointer">
+                Mulai Kuis
+            </button>
+        </div>
+
+        <div id="quiz-screen" class="hidden bg-white p-6 md:p-8 rounded-xl shadow-md">
+            <div class="flex justify-between items-center mb-4 text-sm text-gray-500">
+                <span id="question-counter">Pertanyaan 1 dari 40</span>
+                <span id="score-counter" class="font-semibold text-teal-600">Skor: 0</span>
+            </div>
+            <div class="w-full bg-gray-200 h-2 rounded-full mb-6 overflow-hidden">
+                <div id="progress-bar" class="bg-teal-500 h-2 transition-all duration-300" style="width: 2.5%"></div>
+            </div>
+
+            <div id="question-container">
+                <h3 id="question-text" class="text-lg md:text-xl font-medium text-gray-800 mb-6">Pertanyaan akan muncul di sini...</h3>
+                <div id="options-container" class="space-y-3">
+                    </div>
+            </div>
+
+            <div id="explanation-box" class="hidden mt-6 p-4 rounded-lg border border-teal-200 bg-teal-50 text-teal-900">
+                <h4 class="font-bold mb-1">Pembahasan:</h4>
+                <p id="explanation-text"></p>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button id="next-btn" onclick="nextQuestion()" class="hidden bg-teal-600 hover:bg-teal-700 text-white font-semibold px-5 py-2.5 rounded-lg shadow transition cursor-pointer">
+                    Lanjut
+                </button>
+            </div>
+        </div>
+
+        <div id="result-screen" class="hidden bg-white p-8 rounded-xl shadow-md text-center">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Kuis Selesai!</h2>
+            <div class="text-5xl font-extrabold text-teal-600 my-6" id="final-score">0</div>
+            <p id="result-message" class="text-gray-600 mb-6 font-medium"></p>
+            <button onclick="restartQuiz()" class="bg-teal-600 hover:bg-teal-700 text-white font-semibold px-6 py-2.5 rounded-lg shadow transition cursor-pointer">
+                Ulangi Kuis
+            </button>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-gray-400 text-center py-4 text-xs">
+        &copy; 2026 Aplikasi Kuis Fiqih Islami. Aplikasi Statis untuk GitHub Pages.
+    </footer>
+
+    <script>
+        const questions = [
+            {
+                q: "Secara bahasa, Thaharah memiliki arti...",
+                a: ["Bersih atau suci", "Berwudhu", "Mandi wajib", "Berhias diri"],
+                correct: 0,
+                exp: "Thaharah secara bahasa berarti bersih atau suci dari kotoran atau najis."
+            },
+            {
+                q: "Berikut ini yang termasuk alat thaharah (bersuci) primer yang paling utama adalah...",
+                a: ["Tanah", "Batu", "Air", "Tisu"],
+                correct: 2,
+                exp: "Air merupakan alat utama untuk bersuci (thaharah) dari hadats maupun najis."
+            },
+            {
+                q: "Najis yang berasal dari air kencing bayi laki-laki yang belum makan apa-apa kecuali ASI dan belum berusia 2 tahun disebut najis...",
+                a: ["Mughalladhah", "Mukhaffafah", "Mutawassithah", "Hukmiyah"],
+                correct: 1,
+                exp: "Najis Mukhaffafah adalah najis ringan, contohnya air kencing bayi laki-laki yang hanya minum ASI dan belum berumur 2 tahun."
+            },
+            {
+                q: "Air yang suci zatnya tetapi tidak dapat digunakan untuk menyucikan sesuatu yang lain disebut air...",
+                a: ["Mutlak", "Mutanajjis", "Musyammas", "Thahir Ghairu Mutahhir"],
+                correct: 3,
+                exp: "Air Thahir Ghairu Mutahhir adalah air yang suci namun tidak menyucikan, seperti air kopi, susu, atau air musta'mal."
+            },
+            {
+                q: "Bagaimana cara menyucikan benda yang terkena najis Mughalladhah (anjing/babi)?",
+                a: ["Cukup dipercikkan air", "Dicuci 7 kali, salah satunya dicampur dengan tanah", "Dicuci dengan sabun sampai wangi", "Dibilas sekali hingga hilang baunya"],
+                correct: 1,
+                exp: "Najis Mughalladhah wajib dibasuh 7 kali dan salah satunya dicampur dengan tanah suci."
+            },
+            {
+                q: "Membersihkan diri setelah buang air kecil atau buang air besar menggunakan air atau batu disebut...",
+                a: ["Istinja'", "I'tikaf", "Istisqa", "Istighfar"],
+                correct: 0,
+                exp: "Istinja' menurut syariat adalah membersihkan sesuatu yang keluar dari kubul atau dubur."
+            },
+            {
+                q: "Berikut ini yang merupakan adab ketika berada di dalam kamar mandi (buang air) adalah...",
+                a: ["Membaca Al-Qur'an", "Mendahulukan kaki kiri saat masuk", "Berbicara dengan keras", "Menghadap kiblat di tempat terbuka"],
+                correct: 1,
+                exp: "Di antara adab kamar mandi adalah masuk mendahulukan kaki kiri sambil membaca doa."
+            },
+            {
+                q: "Tempat manakah yang dilarang keras untuk dijadikan tempat buang air besar/kecil?",
+                a: ["Kamar mandi tertutup", "Halaman rumah sendiri", "Jalan umum atau tempat berteduh manusia", "Toilet umum"],
+                correct: 2,
+                exp: "Dilarang membuang hajat di jalan umum, tempat berteduh, atau air mengalir karena mengganggu orang lain."
+            },
+            {
+                q: "Keluar sesuatu dari kubul atau dubur (seperti air seni atau gas) menyebabkan seseorang berhadats...",
+                a: ["Kecil", "Besar", "Sedang", "Mutawassithah"],
+                correct: 0,
+                exp: "Keluarnya sesuatu dari dua jalan (kubul dan dubur) termasuk perkara yang membatalkan wudhu dan memicu hadats kecil."
+            },
+            {
+                q: "Bagi orang yang sedang berhadats besar, hal yang dilarang keras untuk dilakukan adalah...",
+                a: ["Mendengarkan ceramah", "Bekerja mencari nafkah", "Melaksanakan ibadah Shalat", "Membaca buku sejarah"],
+                correct: 2,
+                exp: "Orang yang berhadats besar maupun kecil dilarang melaksanakan shalat sebelum bersuci."
+            },
+            {
+                q: "Manakah di bawah ini yang termasuk ke dalam syarat sah wudhu?",
+                a: ["Membasuh muka", "Menggunakan air yang suci lagi menyucikan", "Membasuh kaki", "Niat dalam hati"],
+                correct: 1,
+                exp: "Menggunakan air suci menyucikan adalah syarat sah wudhu, sedangkan membasuh muka, kaki, dan niat adalah rukun wudhu."
+            },
+            {
+                q: "Rukun wudhu yang pertama kali dilakukan berdasarkan urutannya adalah...",
+                a: ["Mencuci telapak tangan", "Berkumur-kumur", "Niat bersamaan dengan membasuh muka", "Membasuh kepala"],
+                correct: 2,
+                exp: "Rukun wudhu pertama adalah niat yang dilakukan bersamaan saat membasuh muka."
+            },
+            {
+                q: "Perkara di bawah ini yang berstatus sunnah (bukan rukun) saat wudhu adalah...",
+                a: ["Membasuh muka", "Membasuh kedua tangan sampai siku", "Membasuh kedua telinga luar dan dalam", "Tertib"],
+                correct: 2,
+                exp: "Membasuh telinga hukumnya sunnah dalam wudhu menurut mayoritas ulama Syafi'iyah."
+            },
+            {
+                q: "Hal manakah yang dapat membatalkan ibadah wudhu seseorang?",
+                a: ["Makan makanan yang dimasak api", "Tidur nyenyak dalam posisi terlentang/tidak tetap", "Menangis", "Tertawa terbahak-bahak"],
+                correct: 1,
+                exp: "Tidur dengan posisi pantat tidak menetap di bumi membatalkan wudhu karena hilangnya kesadaran."
+            },
+            {
+                q: "Salah satu syarat diperbolehkannya melakukan tayamum adalah...",
+                a: ["Malas mengambil air wudhu", "Sudah masuk waktu shalat dan tidak ada air setelah berusaha mencari", "Hari sedang mendung", "Air yang ada sangat melimpah"],
+                correct: 1,
+                exp: "Tayamum hanya sah dilakukan jika sudah masuk waktu shalat dan setelah ada upaya mencari air namun tidak menemukannya."
+            },
+            {
+                q: "Rukun tayamum terdiri dari...",
+                a: ["Niat, mengusap wajah, mengusap kedua tangan sampai siku, dan tertib", "Niat, berkumur, dan mengusap kaki", "Mengusap kepala dan telinga saja", "Membasuh kaki dengan debu"],
+                correct: 0,
+                exp: "Rukun tayamum adalah niat, mengusap wajah, mengusap kedua tangan hingga siku, dan dilakukan secara tertib."
+            },
+            {
+                q: "Berikut ini yang merupakan sebab utama seseorang diperbolehkan bertayamum adalah...",
+                a: ["Suhu udara sangat sejuk", "Sakit yang jika terkena air akan memperparah penyakitnya", "Sedang sibuk bekerja", "Lupa cara berwudhu"],
+                correct: 1,
+                exp: "Sakit yang membahayakan jika terkena air merupakan udzur syar'i untuk bertayamum."
+            },
+            {
+                q: "Hal yang dapat membatalkan tayamum, selain segala hal yang membatalkan wudhu, adalah...",
+                a: ["Melihat air yang bisa digunakan sebelum shalat dimulai", "Makan makanan manis", "Berbicara dengan orang lain", "Tertidur dalam posisi duduk tegap"],
+                correct: 0,
+                exp: "Melihat atau menemukan air sebelum shalat dimulai menggugurkan status tayamum."
+            },
+            {
+                q: "Manakah yang termasuk sunnah dalam pelaksanaan tayamum?",
+                a: ["Mengusap wajah", "Membaca basmalah di awal", "Niat", "Tertib"],
+                correct: 1,
+                exp: "Membaca basmalah di awal hukumnya sunnah, sedangkan niat, mengusap wajah, dan tertib adalah rukun."
+            },
+            {
+                q: "Perkara yang mewajibkan seseorang untuk melakukan mandi besar (mandi wajib) adalah...",
+                a: ["Selesai buang air besar", "Keluarnya darah haid bagi wanita atau nifas", "Selesai makan daging unta", "Menyentuh kemaluan"],
+                correct: 1,
+                exp: "Haid dan nifas merupakan penyebab utama wajibnya mandi besar bagi wanita setelah darahnya berhenti."
+            },
+            {
+                q: "Berikut ini yang merupakan rukun (fardhu) mandi besar adalah...",
+                a: ["Membaca basmalah", "Berkumur-kumur", "Meratakan air ke seluruh rambut dan permukaan kulit tubuh", "Membasuh tangan tiga kali"],
+                correct: 2,
+                exp: "Rukun mandi wajib ada dua: Niat dan meratakan air ke seluruh anggota tubuh/kulit."
+            },
+            {
+                q: "Di antara perkara sunnah dalam mandi besar adalah...",
+                a: ["Niat mandi wajib", "Menghilangkan najis yang menempel", "Mendahulukan anggota badan sebelah kanan", "Mengalirkan air ke kepala"],
+                correct: 2,
+                exp: "Mendahulukan bagian tubuh sebelah kanan merupakan sunnah di setiap amalan bersuci."
+            },
+            {
+                q: "Mandi yang dianjurkan (sunnah) untuk dikerjakan, bukan karena berhadats besar, contohnya adalah...",
+                a: ["Mandi sebelum tidur siang", "Mandi untuk menghadiri shalat Jum'at", "Mandi setelah makan", "Mandi setelah bepergian dekat"],
+                correct: 1,
+                exp: "Mandi Jum'at hukumnya sunnah muakkadah bagi orang yang hendak menghadiri shalat Jum'at."
+            },
+            {
+                q: "Potongan ayat '...Rukū’lah kamu dan sujudlah kamu...' dalam surah Al-Hajj ayat 77 memuat perintah tentang...",
+                a: ["Zakat", "Puasa", "Shalat", "Haji"],
+                correct: 2,
+                exp: "QS. Al-Hajj: 77 berisi perintah ruku' dan sujud yang merupakan bagian inti dari ibadah Shalat."
+            },
+            {
+                q: "Dalam Surah Al-Baqarah ayat 43, perintah shalat digandangkan bersamaan dengan perintah...",
+                a: ["Menunaikan zakat", "Pergi haji", "Berjihad", "Berpuasa Ramadhan"],
+                correct: 0,
+                exp: "Arti QS Al-Baqarah: 43: 'Dan dirikanlah shalat, tunaikanlah zakat dan rukulah beserta orang-orang yang ruku'."
+            },
+            {
+                q: "Manakah di bawah ini yang merupakan syarat wajib shalat (faktor yang membuat seseorang terbebani kewajiban shalat)?",
+                a: ["Suci dari hadats", "Islam, baligh, dan berakal sehat", "Menghadap kiblat", "Sudah masuk waktu"],
+                correct: 1,
+                exp: "Syarat wajib shalat meliputi Islam, Baligh, dan Berakal. Tanpa ini, seseorang belum berdosa meninggalkan shalat."
+            },
+            {
+                q: "Menghadap ke arah kiblat (Ka'bah) merupakan salah satu dari...",
+                a: ["Rukun shalat", "Syarat sah shalat", "Sunnah shalat", "Syarat wajib shalat"],
+                correct: 1,
+                exp: "Syarat sah shalat adalah hal yang harus dipenuhi sebelum shalat dimulai agar shalatnya sah, salah satunya menghadap kiblat."
+            },
+            {
+                q: "Membaca Surah Al-Fatihah di setiap rakaat shalat berkedudukan sebagai...",
+                a: ["Syarat sah", "Sunnah Ab'adh", "Rukun shalat", "Sunnah Hai'at"],
+                correct: 2,
+                exp: "Al-Fatihah termasuk rukun qauli (ucapan) yang wajib dibaca, jika ditinggalkan shalatnya tidak sah."
+            },
+            {
+                q: "Jika seseorang sengaja atau lupa meninggalkan Sunnah Ab'adh (seperti Tasyahud Awal), maka ia disunnahkan ganti dengan...",
+                a: ["Sujud sahwi", "Mengulang shalat dari awal", "Membayar dam/denda", "Sujud tilawah"],
+                correct: 0,
+                exp: "Meninggalkan sunnah ab'adh disunnahkan untuk ditambal dengan melakukan sujud sahwi sebelum salam."
+            },
+            {
+                q: "Membaca surah pendek Al-Qur'an setelah Al-Fatihah pada rakaat pertama dan kedua merupakan sunnah...",
+                a: ["Ab'adh", "Hai'at", "Rukun", "Wajib"],
+                correct: 1,
+                exp: "Sunnah Hai'at adalah sunnah yang jika ditinggalkan tidak perlu diganti dengan sujud sahwi, contohnya membaca surat pendek."
+            },
+            {
+                q: "Perbuatan manakah yang secara langsung dapat membatalkan ibadah shalat seseorang?",
+                a: ["Berbicara dengan sengaja walaupun hanya satu kata yang dipahami", "Menangis karena khusyu'", "Membaca surah yang agak panjang", "Melirik sedikit tanpa memalingkan dada"],
+                correct: 0,
+                exp: "Berbicara dengan sengaja di luar bacaan shalat membatalkan shalat secara mutlak."
+            },
+            {
+                q: "Sujud sahwi dilaksanakan sebanyak dua kali sujud, dan letak pelaksanaannya yang paling utama adalah...",
+                a: ["Setelah salam pertama", "Sebelum salam", "Di pertengahan rakaat kedua", "Kapan saja setelah shalat selesai"],
+                correct: 1,
+                exp: "Menurut madzhab Syafi'i, sujud sahwi dilakukan sebanyak dua kali sujud tepat sebelum melakukan salam."
+            },
+            {
+                q: "Shalat fardhu yang memiliki rentang waktu pelaksanaan dari terbenamnya mega merah (syafaq) hingga terbit fajar shadiq adalah shalat...",
+                a: ["Maghrib", "Isya'", "Subuh", "Ashar"],
+                correct: 1,
+                exp: "Waktu shalat Isya' dimulai sejak hilangnya mega merah di ufuk barat sampai terbitnya fajar shadiq."
+            },
+            {
+                q: "Hukum melaksanakan ibadah Shalat Jum'at bagi seorang laki-laki muslim, baligh, mukim, dan sehat adalah...",
+                a: ["Fardhu Kifayah", "Sunnah Muakkad", "Fardhu 'Ain", "Mubah"],
+                correct: 2,
+                exp: "Shalat Jum'at hukumnya Fardhu 'Ain (wajib individu) bagi setiap laki-laki muslim yang memenuhi syarat."
+            },
+            {
+                q: "Di antara rukun khutbah Jum'at yang wajib diucapkan oleh khatib pada kedua khutbah adalah...",
+                a: ["Membaca shalawat kepada Nabi Muhammad SAW dan berwasiat takwa", "Berdiri tegak", "Memakai pakaian warna putih", "Memegang tongkat"],
+                correct: 0,
+                exp: "Membaca shalawat dan berwasiat tentang ketakwaan termasuk rukun khutbah yang wajib terpenuhi agar khutbah sah."
+            },
+            {
+                q: "Hukum dasar melaksanakan shalat lima waktu secara berjamaah bagi kaum laki-laki menurut mayoritas ulama Syafi'iyah adalah...",
+                a: ["Fardhu 'Ain", "Sunnah Muakkad / Fardhu Kifayah", "Mubah saja", "Makruh ditiru"],
+                correct: 1,
+                exp: "Hukum shalat berjamaah bagi laki-laki pada shalat fardhu adalah Fardhu Kifayah (atau sunnah muakkad menurut sebagian pandangan)."
+            },
+            {
+                q: "Makmum yang terlambat datang dan tidak sempat membaca Al-Fatihah bersama imam secara sempurna di rakaat pertama dinamakan makmum...",
+                a: ["Muafik", "Masbuq", "Munfarid", "Masrur"],
+                correct: 1,
+                exp: "Makmum Masbuq adalah makmum yang tertinggal takbiratul ihramnya imam atau tidak mendapati waktu yang cukup untuk membaca Al-Fatihah."
+            },
+            {
+                q: "Mengumpulkan dua shalat fardhu dalam satu waktu dan dikerjakan di waktu shalat yang pertama (misal Zuhur dan Ashar di waktu Zuhur) disebut...",
+                a: ["Jama' Takhir", "Jama' Taqdim", "Qashar", "Shalat Khauf"],
+                correct: 1,
+                exp: "Jama' Taqdim berarti mengumpulkan dua shalat di waktu shalat yang pertama."
+            },
+            {
+                q: "Meringkas rakaat shalat yang tadinya 4 rakaat menjadi 2 rakaat saja bagi musafir disebut shalat...",
+                a: ["Jama'", "Qashar", "Khauf", "Istikharah"],
+                correct: 1,
+                exp: "Qashar artinya meringkas jumlah rakaat shalat dari 4 rakaat (Zuhur, Ashar, Isya') menjadi 2 rakaat."
+            },
+            {
+                q: "Shalat fardhu manakah yang sama sekali tidak bisa di-qashar (diringkas jumlah rakaatnya)?",
+                a: ["Zuhur dan Ashar", "Isya'", "Maghrib dan Subuh", "Semua shalat bisa di-qashar"],
+                correct: 2,
+                exp: "Shalat Maghrib (3 rakaat) dan Subuh (2 rakaat) tidak boleh dan tidak bisa di-qashar."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let hasAnswered = false;
+
+        function startQuiz() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            hasAnswered = false;
+            document.getElementById('next-btn').classList.add('hidden');
+            document.getElementById('explanation-box').classList.add('hidden');
+            
+            const qData = questions[currentQuestionIndex];
+            
+            // Update counter & progress
+            document.getElementById('question-counter').innerText = `Pertanyaan ${currentQuestionIndex + 1} dari ${questions.length}`;
+            document.getElementById('score-counter').innerText = `Skor: ${score}`;
+            const progressPercent = ((currentQuestionIndex + 1) / questions.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+
+            // Set question text
+            document.getElementById('question-text').innerText = qData.q;
+
+            // Set options
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            qData.a.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.innerText = option;
+                button.className = "w-full text-left p-4 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-teal-500 font-medium transition cursor-pointer text-gray-700 block bg-white";
+                button.onclick = () => selectOption(index, button);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function selectOption(selectedIndex, selectedButton) {
+            if (hasAnswered) return; // Prevent multiple clicks
+            hasAnswered = true;
+
+            const qData = questions[currentQuestionIndex];
+            const optionsContainer = document.getElementById('options-container');
+            const buttons = optionsContainer.getElementsByTagName('button');
+
+            if (selectedIndex === qData.correct) {
+                selectedButton.classList.add('correct', 'text-green-900', 'font-bold');
+                score += 2.5; // 40 questions * 2.5 = 100 total max score
+            } else {
+                selectedButton.classList.add('wrong', 'text-red-900', 'font-bold');
+                // Highlight the correct answer for learning
+                buttons[qData.correct].classList.add('correct', 'text-green-900', 'font-bold');
+            }
+
+            // Show explanation
+            document.getElementById('explanation-text').innerText = qData.exp;
+            document.getElementById('explanation-box').classList.remove('hidden');
+            
+            // Update score counter immediately
+            document.getElementById('score-counter').innerText = `Skor: ${score}`;
+
+            // Show next button
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            
+            const finalScoreElement = document.getElementById('final-score');
+            finalScoreElement.innerText = score;
+
+            let msg = "";
+            if (score >= 80) msg = "Mumtaz! Luar biasa, pemahaman Fiqih Anda sangat baik.";
+            else if (score >= 60) msg = "Jayyid! Cukup baik, pelajari lagi beberapa poin pembahasan yang keliru.";
+            else msg = "Tetap Semangat! Terus belajar dan membaca kembali materi Thaharah & Shalat Anda.";
+
+            document.getElementById('result-message').innerText = msg;
+        }
+
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
